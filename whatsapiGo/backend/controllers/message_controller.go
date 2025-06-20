@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
@@ -37,13 +38,14 @@ type TextMessageRequest struct {
 
 // MediaMessageRequest - Estructura para envío de mensajes multimedia
 type MediaMessageRequest struct {
-	InstanceID string `json:"instance_id" binding:"required"`
-	Phone      string `json:"phone" binding:"required"`
-	IsGroup    bool   `json:"is_group,omitempty"`
-	Caption    string `json:"caption,omitempty"`           // Caption para el archivo
-	FileName   string `json:"filename,omitempty"`          // Nombre del archivo
-	MimeType   string `json:"mimetype,omitempty"`          // Tipo MIME
-	MediaData  string `json:"media_data" binding:"required"` // Datos en base64
+	InstanceID  string `json:"instance_id" binding:"required"`
+	Phone       string `json:"phone" binding:"required"`
+	IsGroup     bool   `json:"is_group,omitempty"`
+	Caption     string `json:"caption,omitempty"`           // Caption para el archivo
+	FileName    string `json:"filename,omitempty"`          // Nombre del archivo
+	MimeType    string `json:"mimetype,omitempty"`          // Tipo MIME
+	MediaData   string `json:"media_data,omitempty"`        // Datos en base64 (alternativo a MediaURL)
+	MediaURL    string `json:"media_url,omitempty"`         // URL del archivo (alternativo a MediaData)
 	QuotedMsgID string `json:"quoted_msg_id,omitempty"`
 }
 
@@ -234,8 +236,26 @@ func (mc *MessageController) SendImageMessage(c *gin.Context) {
 		return
 	}
 
+	// Validar que se proporcione MediaData O MediaURL
+	if req.MediaData == "" && req.MediaURL == "" {
+		c.JSON(http.StatusBadRequest, MessageResponse{
+			Success: false,
+			Message: "Debe proporcionar 'media_data' (base64) o 'media_url' (URL del archivo)",
+		})
+		return
+	}
+
+	// Validar que no se proporcionen ambos
+	if req.MediaData != "" && req.MediaURL != "" {
+		c.JSON(http.StatusBadRequest, MessageResponse{
+			Success: false,
+			Message: "Solo debe proporcionar 'media_data' O 'media_url', no ambos",
+		})
+		return
+	}
+
 	// Validar que es una imagen
-	if !mc.isValidImageType(req.MimeType) {
+	if req.MimeType != "" && !mc.isValidImageType(req.MimeType) {
 		c.JSON(http.StatusBadRequest, MessageResponse{
 			Success: false,
 			Message: "Tipo de archivo no válido. Solo se permiten imágenes (JPEG, PNG, GIF, WebP)",
@@ -273,8 +293,26 @@ func (mc *MessageController) SendVideoMessage(c *gin.Context) {
 		return
 	}
 
+	// Validar que se proporcione MediaData O MediaURL
+	if req.MediaData == "" && req.MediaURL == "" {
+		c.JSON(http.StatusBadRequest, MessageResponse{
+			Success: false,
+			Message: "Debe proporcionar 'media_data' (base64) o 'media_url' (URL del archivo)",
+		})
+		return
+	}
+
+	// Validar que no se proporcionen ambos
+	if req.MediaData != "" && req.MediaURL != "" {
+		c.JSON(http.StatusBadRequest, MessageResponse{
+			Success: false,
+			Message: "Solo debe proporcionar 'media_data' O 'media_url', no ambos",
+		})
+		return
+	}
+
 	// Validar que es un video
-	if !mc.isValidVideoType(req.MimeType) {
+	if req.MimeType != "" && !mc.isValidVideoType(req.MimeType) {
 		c.JSON(http.StatusBadRequest, MessageResponse{
 			Success: false,
 			Message: "Tipo de archivo no válido. Solo se permiten videos (MP4, 3GP, MOV, AVI)",
@@ -312,8 +350,25 @@ func (mc *MessageController) SendAudioMessage(c *gin.Context) {
 		return
 	}
 
+	// Validar que se proporcione MediaData O MediaURL
+	if req.MediaData == "" && req.MediaURL == "" {
+		c.JSON(http.StatusBadRequest, MessageResponse{
+			Success: false,
+			Message: "Debe proporcionar 'media_data' (base64) o 'media_url' (URL del archivo)",
+		})
+		return
+	}
+
+	if req.MediaData != "" && req.MediaURL != "" {
+		c.JSON(http.StatusBadRequest, MessageResponse{
+			Success: false,
+			Message: "Solo debe proporcionar 'media_data' O 'media_url', no ambos",
+		})
+		return
+	}
+
 	// Validar que es un audio
-	if !mc.isValidAudioType(req.MimeType) {
+	if req.MimeType != "" && !mc.isValidAudioType(req.MimeType) {
 		c.JSON(http.StatusBadRequest, MessageResponse{
 			Success: false,
 			Message: "Tipo de archivo no válido. Solo se permiten audios (MP3, AAC, OGG, OPUS, M4A)",
@@ -347,6 +402,23 @@ func (mc *MessageController) SendDocumentMessage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, MessageResponse{
 			Success: false,
 			Message: fmt.Sprintf("Error en los datos enviados: %v", err),
+		})
+		return
+	}
+
+	// Validar que se proporcione MediaData O MediaURL
+	if req.MediaData == "" && req.MediaURL == "" {
+		c.JSON(http.StatusBadRequest, MessageResponse{
+			Success: false,
+			Message: "Debe proporcionar 'media_data' (base64) o 'media_url' (URL del archivo)",
+		})
+		return
+	}
+
+	if req.MediaData != "" && req.MediaURL != "" {
+		c.JSON(http.StatusBadRequest, MessageResponse{
+			Success: false,
+			Message: "Solo debe proporcionar 'media_data' O 'media_url', no ambos",
 		})
 		return
 	}
@@ -558,21 +630,79 @@ func (mc *MessageController) sendMediaMessage(req MediaMessageRequest, mediaType
 		return nil, fmt.Errorf("error en el número de teléfono: %v", err)
 	}
 
-	// Decodificar datos base64
-	mediaData, err := base64.StdEncoding.DecodeString(req.MediaData)
-	if err != nil {
-		return nil, fmt.Errorf("error decodificando datos base64: %v", err)
-	}
+	var mediaData []byte
+	var uploaded whatsmeow.UploadResponse
 
-	// Detectar tipo MIME si no se proporcionó
-	if req.MimeType == "" {
-		req.MimeType = http.DetectContentType(mediaData)
-	}
+	// Procesar según el tipo de entrada (base64 o URL)
+	if req.MediaData != "" {
+		// Decodificar datos base64
+		mediaData, err = base64.StdEncoding.DecodeString(req.MediaData)
+		if err != nil {
+			return nil, fmt.Errorf("error decodificando datos base64: %v", err)
+		}
 
-	// Subir archivo a WhatsApp
-	uploaded, err := instance.Client.Upload(context.Background(), mediaData, whatsmeow.MediaType(mediaType))
-	if err != nil {
-		return nil, fmt.Errorf("error subiendo archivo: %v", err)
+		// Detectar tipo MIME si no se proporcionó
+		if req.MimeType == "" {
+			req.MimeType = http.DetectContentType(mediaData)
+		}
+
+		// Subir archivo usando datos en memoria
+		uploaded, err = instance.Client.Upload(context.Background(), mediaData, whatsmeow.MediaType(mediaType))
+		if err != nil {
+			return nil, fmt.Errorf("error subiendo archivo desde base64: %v", err)
+		}
+
+	} else if req.MediaURL != "" {
+		// Descargar archivo desde URL
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		httpReq, err := http.NewRequestWithContext(ctx, "GET", req.MediaURL, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error creando petición HTTP: %v", err)
+		}
+
+		client := &http.Client{
+			Timeout: 30 * time.Second,
+		}
+		
+		resp, err := client.Do(httpReq)
+		if err != nil {
+			return nil, fmt.Errorf("error descargando archivo desde URL: %v", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("error HTTP al descargar archivo: %d %s", resp.StatusCode, resp.Status)
+		}
+
+		// Leer datos del archivo
+		mediaData, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("error leyendo datos del archivo: %v", err)
+		}
+
+		// Detectar tipo MIME desde el Content-Type de la respuesta o del contenido
+		if req.MimeType == "" {
+			req.MimeType = resp.Header.Get("Content-Type")
+			if req.MimeType == "" {
+				req.MimeType = http.DetectContentType(mediaData)
+			}
+		}
+
+		// Obtener nombre de archivo de la URL si no se proporcionó
+		if req.FileName == "" && mediaType == "document" {
+			req.FileName = mc.extractFilenameFromURL(req.MediaURL)
+		}
+
+		// Subir archivo usando UploadReader con io.Reader
+		uploaded, err = instance.Client.Upload(context.Background(), mediaData, whatsmeow.MediaType(mediaType))
+		if err != nil {
+			return nil, fmt.Errorf("error subiendo archivo desde URL: %v", err)
+		}
+
+	} else {
+		return nil, fmt.Errorf("debe proporcionar media_data o media_url")
 	}
 
 	// Crear mensaje según el tipo
@@ -649,7 +779,13 @@ func (mc *MessageController) sendMediaMessage(req MediaMessageRequest, mediaType
 		Timestamp: sentMsg.Timestamp,
 	}
 
-	mc.logger.Infof("Mensaje %s enviado: %s -> %s", mediaType, req.InstanceID, req.Phone)
+	// Log diferente según el origen
+	if req.MediaData != "" {
+		mc.logger.Infof("Mensaje %s enviado desde base64: %s -> %s", mediaType, req.InstanceID, req.Phone)
+	} else {
+		mc.logger.Infof("Mensaje %s enviado desde URL: %s -> %s (%s)", mediaType, req.InstanceID, req.Phone, req.MediaURL)
+	}
+	
 	return messageInfo, nil
 }
 
@@ -694,6 +830,32 @@ func (mc *MessageController) isValidImageType(mimeType string) bool {
 	return false
 }
 
+// extractFilenameFromURL - Extraer nombre de archivo desde URL
+func (mc *MessageController) extractFilenameFromURL(urlStr string) string {
+	// Parsear URL
+	parsedURL, err := url.Parse(urlStr)
+	if err != nil {
+		return "archivo_descargado"
+	}
+
+	// Obtener el path y extraer el nombre del archivo
+	path := parsedURL.Path
+	if path == "" || path == "/" {
+		return "archivo_descargado"
+	}
+
+	// Obtener la última parte del path
+	parts := strings.Split(path, "/")
+	filename := parts[len(parts)-1]
+
+	// Si no hay nombre o solo extensión, usar un nombre por defecto
+	if filename == "" || strings.HasPrefix(filename, ".") {
+		return "archivo_descargado"
+	}
+
+	return filename
+}
+
 func (mc *MessageController) isValidVideoType(mimeType string) bool {
 	validTypes := []string{
 		"video/mp4", "video/3gpp", "video/quicktime", 
@@ -719,4 +881,4 @@ func (mc *MessageController) isValidAudioType(mimeType string) bool {
 		}
 	}
 	return false
-}// Archivo base: message_controller.go
+}
