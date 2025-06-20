@@ -9,6 +9,7 @@ import (
 func SetupRoutes(
     instanceController *controllers.InstanceController,
     messageController *controllers.MessageController,
+    contactController *controllers.ContactController,
 ) *gin.Engine {
     router := gin.Default()
     
@@ -54,8 +55,21 @@ func SetupRoutes(
             messages.POST("/document", messageController.SendDocumentMessage)
             messages.POST("/location", messageController.SendLocationMessage)
             messages.POST("/contact", messageController.SendContactMessage)
-            // messages.POST("/forward", messageController.ForwardMessage)
-            // messages.GET("/:instance_id/history", messageController.GetMessageHistory)
+        }
+
+        // Rutas de contactos
+        contacts := v1.Group("/contacts")
+        {
+            contacts.GET("/:instanceId", contactController.GetContacts)
+            contacts.GET("/:instanceId/search", contactController.SearchContacts)
+            contacts.GET("/:instanceId/info/:jid", contactController.GetContactInfo)
+            contacts.POST("/:instanceId/check", contactController.CheckContacts)
+            contacts.POST("/:instanceId/block", contactController.BlockContact)
+            contacts.POST("/:instanceId/unblock", contactController.UnblockContact)
+            
+            // Rutas para conversión LID ↔ JID
+            contacts.GET("/:instanceId/lid/get", contactController.GetLIDFromJID)
+            contacts.GET("/:instanceId/lid/from-lid", contactController.GetJIDFromLID)
         }
     }
 
