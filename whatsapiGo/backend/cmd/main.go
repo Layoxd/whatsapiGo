@@ -41,9 +41,10 @@ func main() {
     messageController := controllers.NewMessageController(instanceController, waLogger)
     contactController := controllers.NewContactController(instanceController, waLogger)
     groupController := controllers.NewGroupController(instanceController, waLogger)
+    statusController := controllers.NewStatusController(instanceController, waLogger)
 
     // Configurar rutas
-    router := routes.SetupRoutes(instanceController, messageController, contactController, groupController)
+    router := routes.SetupRoutes(instanceController, messageController, contactController, groupController, statusController)
 
     // Obtener puerto del environment o usar 8080 por defecto
     port := os.Getenv("PORT")
@@ -56,7 +57,8 @@ func main() {
     logger.Sugar().Infof("📱 Endpoints de mensajes con doble soporte (Base64 + URL)")
     logger.Sugar().Infof("👥 Endpoints de contactos con soporte LID completo")
     logger.Sugar().Infof("👥 Endpoints de grupos con gestión avanzada")
-    logger.Sugar().Infof("🔄 Conversión JID ↔ LID habilitada")
+    logger.Sugar().Infof("📢 Endpoints de estados/stories con multimedia completo")
+    logger.Sugar().Infof("🔄 Conversión JID ↔ LID habilitada en todo el sistema")
     
     log.Fatal(router.Run(":" + port))
 }
