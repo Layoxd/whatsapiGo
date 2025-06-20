@@ -17,6 +17,27 @@
 * Primer mensaje para (mock) establecido
 * Confirmación de Stack Tecnológico: WhatsMeow + Gin + PostgreSQL + Redis + Vue3
 
+### 🔔 **WebhookController** - IMPLEMENTADO ✅
+  - Endpoint POST `/webhooks/{instanceId}/configure` - Configurar webhook principal
+  - Endpoint POST `/webhooks/{instanceId}/add` - Agregar webhook adicional
+  - Endpoint GET `/webhooks/{instanceId}` - Listar todos los webhooks
+  - Endpoint PUT `/webhooks/{instanceId}/{webhookId}` - Actualizar webhook específico
+  - Endpoint DELETE `/webhooks/{instanceId}/{webhookId}` - Eliminar webhook
+  - Endpoint POST `/webhooks/{instanceId}/test` - Probar conectividad de webhooks
+  - Endpoint GET `/webhooks/{instanceId}/metrics` - Métricas de delivery y performance
+  - Endpoint POST `/webhooks/{instanceId}/retry/{eventId}` - Reintentar evento específico
+  - Endpoint GET `/webhooks/{instanceId}/logs` - Logs detallados de eventos
+  - Endpoint POST `/webhooks/{instanceId}/filters` - Configurar filtros de eventos
+  - **🚀 SISTEMA EMPRESARIAL**: Arquitectura de webhooks de nivel enterprise
+  - **🔄 RETRY INTELIGENTE**: Backoff exponencial con 5 intentos y jitter
+  - **📊 MÉTRICAS AVANZADAS**: Success rate, latencia, throughput, error tracking
+  - **🛡️ SEGURIDAD MÁXIMA**: Firma HMAC, validación de headers, rate limiting
+  - **🎯 FILTROS GRANULARES**: Por tipo de evento, contacto, grupo, estado
+  - **📦 QUEUE MANAGEMENT**: Sistema de colas para alto volumen con batching
+  - **🔗 MÚLTIPLES WEBHOOKS**: Hasta 10 endpoints por instancia con fallback
+  - **💎 HEALTH MONITORING**: Verificación automática de salud de endpoints
+  - **📈 ANALYTICS EN TIEMPO REAL**: Dashboard de métricas y performance
+
 ### 📢 **StatusController** - IMPLEMENTADO ✅
   - Endpoint POST `/status/{instanceId}/publish` - Publicar estado/story multimedia
   - Endpoint GET `/status/{instanceId}` - Listar estados propios
