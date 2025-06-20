@@ -3,15 +3,19 @@ package routes
 import (
     "github.com/gin-gonic/gin"
     "github.com/Layoxd/whatsapiGo/controllers"
+    "github.com/Layoxd/whatsapiGo/services"  // ← NUEVO IMPORT
 )
 
 // SetupRoutes - Configurar todas las rutas de la API
+// ← PARÁMETROS ACTUALIZADOS
 func SetupRoutes(
     instanceController *controllers.InstanceController,
     messageController *controllers.MessageController,
     contactController *controllers.ContactController,
     groupController *controllers.GroupController,
     statusController *controllers.StatusController,
+    webhookController *controllers.WebhookController,  // ← NUEVO PARÁMETRO
+    webhookService *services.WebhookService,           // ← NUEVO PARÁMETRO
 ) *gin.Engine {
     router := gin.Default()
     
@@ -28,15 +32,25 @@ func SetupRoutes(
         c.Next()
     })
 
-    // Health check
+    // Health check actualizado
     router.GET("/health", func(c *gin.Context) {
-        c.JSON(200, gin.H{"status": "ok", "service": "WhatsApp API Go"})
+        c.JSON(200, gin.H{
+            "status":  "ok", 
+            "service": "WhatsApp API Go",
+            "version": "1.0.0",                           // ← NUEVO
+            "features": []string{                         // ← NUEVO
+                "webhooks",
+                "call_management", 
+                "multimedia_status",
+                "lid_support",
+            },
+        })
     })
 
     // Grupo de rutas API v1
     v1 := router.Group("/api/v1")
     {
-        // Rutas de instancias
+        // Rutas de instancias (existentes)
         instances := v1.Group("/instances")
         {
             instances.POST("", instanceController.CreateInstance)
@@ -47,7 +61,7 @@ func SetupRoutes(
             instances.POST("/:id/logout", instanceController.LogoutInstance)
         }
 
-        // Rutas de mensajes
+        // Rutas de mensajes (existentes)
         messages := v1.Group("/messages")
         {
             messages.POST("/text", messageController.SendTextMessage)
@@ -59,7 +73,7 @@ func SetupRoutes(
             messages.POST("/contact", messageController.SendContactMessage)
         }
 
-        // Rutas de contactos
+        // Rutas de contactos (existentes)
         contacts := v1.Group("/contacts")
         {
             contacts.GET("/:instanceId", contactController.GetContacts)
@@ -72,7 +86,7 @@ func SetupRoutes(
             contacts.GET("/:instanceId/lid/from-lid", contactController.GetJIDFromLID)
         }
 
-        // Rutas de grupos
+        // Rutas de grupos (existentes)
         groups := v1.Group("/groups")
         {
             groups.POST("/:instanceId/create", groupController.CreateGroup)
@@ -89,7 +103,7 @@ func SetupRoutes(
             groups.POST("/:instanceId/:groupId/leave", groupController.LeaveGroup)
         }
 
-        // Rutas de estados/stories
+        // Rutas de estados/stories (existentes)
         status := v1.Group("/status")
         {
             status.POST("/:instanceId/publish", statusController.PublishStatus)
@@ -102,6 +116,36 @@ func SetupRoutes(
             // Configuraciones de privacidad
             status.POST("/:instanceId/privacy", statusController.UpdateStatusPrivacy)
             status.GET("/:instanceId/privacy", statusController.GetStatusPrivacy)
+        }
+
+        // ===== NUEVAS RUTAS DE WEBHOOKS =====
+        webhooks := v1.Group("/webhooks")
+        {
+            // Gestión de webhooks
+            webhooks.POST("/:instanceId/configure", webhookController.ConfigureWebhook)
+            webhooks.POST("/:instanceId/add", webhookController.AddWebhook)
+            webhooks.GET("/:instanceId", webhookController.ListWebhooks)
+            webhooks.PUT("/:instanceId/:webhookId", webhookController.UpdateWebhook)
+            webhooks.DELETE("/:instanceId/:webhookId", webhookController.DeleteWebhook)
+            
+            // Testing y métricas
+            webhooks.POST("/:instanceId/test", webhookController.TestWebhook)
+            webhooks.GET("/:instanceId/metrics", webhookController.GetMetrics)
+            
+            // Logs y reintentos
+            webhooks.POST("/:instanceId/retry/:eventId", webhookController.RetryEvent)
+            webhooks.GET("/:instanceId/logs", webhookController.GetLogs)
+            
+            // Filtros
+            webhooks.POST("/:instanceId/filters", webhookController.ConfigureFilters)
+        }
+
+        // ===== NUEVAS RUTAS DE LLAMADAS =====
+        calls := v1.Group("/calls")
+        {
+            calls.POST("/:instanceId/reject", webhookController.RejectCall)
+            calls.GET("/:instanceId/settings", webhookController.GetCallSettings)
+            calls.PUT("/:instanceId/settings", webhookController.UpdateCallSettings)
         }
     }
 
