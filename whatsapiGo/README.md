@@ -1,1 +1,2 @@
-// Archivo base: README.md
+whatsapiGo
+whatsapiGo API WhatsApp integration API
