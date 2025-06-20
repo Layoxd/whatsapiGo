@@ -14,6 +14,27 @@
 * Primer mensaje para (mock) establecido
 * Confirmación de Stack Tecnológico: WhatsMeow + Gin + PostgreSQL + Redis + Vue3
 
+### 👥 **GroupController** - IMPLEMENTADO ✅
+  - Endpoint POST `/groups/{instanceId}/create` - Crear nuevo grupo
+  - Endpoint DELETE `/groups/{instanceId}/{groupId}` - Eliminar grupo (solo admin)
+  - Endpoint GET `/groups/{instanceId}` - Listar todos los grupos
+  - Endpoint GET `/groups/{instanceId}/{groupId}/info` - Info completa del grupo
+  - Endpoint PUT `/groups/{instanceId}/{groupId}/update` - Actualizar configuraciones
+  - Endpoint POST `/groups/{instanceId}/{groupId}/participants/add` - Agregar participantes
+  - Endpoint POST `/groups/{instanceId}/{groupId}/participants/remove` - Remover participantes
+  - Endpoint POST `/groups/{instanceId}/{groupId}/admins/add` - Promover a admin
+  - Endpoint POST `/groups/{instanceId}/{groupId}/admins/remove` - Degradar admin
+  - Endpoint GET `/groups/{instanceId}/{groupId}/invite-link` - Obtener enlace de invitación
+  - Endpoint POST `/groups/{instanceId}/{groupId}/invite-link/reset` - Resetear enlace
+  - Endpoint POST `/groups/{instanceId}/{groupId}/leave` - Abandonar grupo
+  - **🆕 SOPORTE COMPLETO LID**: Gestión de grupos con Link IDs
+  - **👑 GESTIÓN DE ADMINS**: Promover/degradar administradores
+  - **🖼️ CONFIGURACIONES AVANZADAS**: Nombre, descripción, imagen del grupo
+  - **🔗 ENLACES DE INVITACIÓN**: Crear, obtener y resetear links
+  - **📊 INFO DETALLADA**: Participantes, admins, configuraciones completas
+  - **⚙️ PERMISOS GRANULARES**: Control fino de configuraciones del grupo
+  - **👥 GESTIÓN DE PARTICIPANTES**: Add/remove con validación de permisos
+
 ### 👥 **ContactController** - IMPLEMENTADO ✅
   - Endpoint GET `/contacts/{instanceId}` - Listar todos los contactos  
   - Endpoint GET `/contacts/{instanceId}/search` - Buscar contactos por nombre/teléfono
