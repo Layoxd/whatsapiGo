@@ -17,6 +17,9 @@
   - Endpoint POST `/messages/contact` - Enviar contactos (vCard)
   - Endpoint GET `/messages/{instanceId}/history` - Historial de mensajes
   - Endpoint POST `/messages/forward` - Reenviar mensajes
+  - **🚀 DOBLE SOPORTE**: Base64 Y URLs para archivos multimedia
+  - **📥 DESCARGA AUTOMÁTICA**: Desde URLs con timeout y validación
+  - **🔍 DETECCIÓN AUTOMÁTICA**: Tipos MIME y nombres de archivo
   - Soporte completo para grupos y contactos individuales
   - Manejo de estados de entrega (enviado, entregado, leído)
   - Validación de formatos de archivo y tipos MIME
@@ -53,9 +56,12 @@
 * **2 Controladores implementados** (InstanceController + MessageController)
 * **13 Endpoints funcionales** para instancias y mensajes
 * **7 Tipos de mensajes soportados** (texto, imagen, video, audio, documento, ubicación, contacto)
+* **🚀 DOBLE MÉTODO DE ARCHIVOS**: Base64 Y URLs con descarga automática
 * **Integración completa** con WhatsMeow v0.0.0-20240625142232
 * **Validación robusta** de tipos MIME y formatos
+* **Detección automática** de tipos MIME y nombres de archivo
 * **Arquitectura escalable** preparada para producción
+* **Timeout inteligente** de 30s para descargas desde URL
 
 ### 🔧 **TECNOLOGÍAS IMPLEMENTADAS**
 * WhatsMeow - Cliente WhatsApp multi-dispositivo
