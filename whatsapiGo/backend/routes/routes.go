@@ -11,6 +11,7 @@ func SetupRoutes(
     messageController *controllers.MessageController,
     contactController *controllers.ContactController,
     groupController *controllers.GroupController,
+    statusController *controllers.StatusController,
 ) *gin.Engine {
     router := gin.Default()
     
@@ -79,21 +80,28 @@ func SetupRoutes(
             groups.GET("/:instanceId", groupController.GetGroups)
             groups.GET("/:instanceId/:groupId/info", groupController.GetGroupInfo)
             groups.PUT("/:instanceId/:groupId/update", groupController.UpdateGroup)
-            
-            // Gestión de participantes
             groups.POST("/:instanceId/:groupId/participants/add", groupController.AddParticipants)
             groups.POST("/:instanceId/:groupId/participants/remove", groupController.RemoveParticipants)
-            
-            // Gestión de administradores
             groups.POST("/:instanceId/:groupId/admins/add", groupController.PromoteToAdmin)
             groups.POST("/:instanceId/:groupId/admins/remove", groupController.DemoteFromAdmin)
-            
-            // Enlaces de invitación
             groups.GET("/:instanceId/:groupId/invite-link", groupController.GetInviteLink)
             groups.POST("/:instanceId/:groupId/invite-link/reset", groupController.ResetInviteLink)
-            
-            // Acciones del grupo
             groups.POST("/:instanceId/:groupId/leave", groupController.LeaveGroup)
+        }
+
+        // Rutas de estados/stories
+        status := v1.Group("/status")
+        {
+            status.POST("/:instanceId/publish", statusController.PublishStatus)
+            status.GET("/:instanceId", statusController.GetOwnStatuses)
+            status.GET("/:instanceId/contacts", statusController.GetContactStatuses)
+            status.GET("/:instanceId/contact/:jid", statusController.GetContactStatus)
+            status.DELETE("/:instanceId/:statusId", statusController.DeleteStatus)
+            status.GET("/:instanceId/:statusId/viewers", statusController.GetStatusViewers)
+            
+            // Configuraciones de privacidad
+            status.POST("/:instanceId/privacy", statusController.UpdateStatusPrivacy)
+            status.GET("/:instanceId/privacy", statusController.GetStatusPrivacy)
         }
     }
 
