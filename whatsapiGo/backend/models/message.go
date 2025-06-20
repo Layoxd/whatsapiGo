@@ -43,4 +43,4 @@ type MessageDelivery struct {
 
 func (MessageDelivery) TableName() string {
     return "message_deliveries"
-}// Archivo base: message.go
+}
