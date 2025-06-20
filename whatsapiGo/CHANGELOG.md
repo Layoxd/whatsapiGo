@@ -7,6 +7,22 @@
 * Primer mensaje para (mock) establecido
 * Confirmación de Stack Tecnológico: WhatsMeow + Gin + PostgreSQL + Redis + Vue3
 
+### 👥 **ContactController** - IMPLEMENTADO ✅
+  - Endpoint GET `/contacts/{instanceId}` - Listar todos los contactos  
+  - Endpoint GET `/contacts/{instanceId}/search` - Buscar contactos por nombre/teléfono
+  - Endpoint GET `/contacts/{instanceId}/info/{jid}` - Info completa de contacto
+  - Endpoint POST `/contacts/{instanceId}/check` - Verificar si números están en WhatsApp
+  - Endpoint GET `/contacts/{instanceId}/blocked` - Listar contactos bloqueados
+  - Endpoint POST `/contacts/{instanceId}/block` - Bloquear contacto
+  - Endpoint POST `/contacts/{instanceId}/unblock` - Desbloquear contacto
+  - Endpoint GET `/contacts/{instanceId}/lid/get` - Convertir JID/Phone a LID
+  - Endpoint GET `/contacts/{instanceId}/lid/from-lid` - Convertir LID a JID/Phone
+  - **🆕 SOPORTE COMPLETO LID**: Compatibilidad con Link IDs privados
+  - **🔄 DOBLE IDENTIFICACIÓN**: JID tradicional Y LID moderno
+  - **🔍 BÚSQUEDA INTELIGENTE**: Por número, nombre, JID o LID
+  - **📊 INFO COMPLETA**: Avatar, estado, verified business name
+  - **🚫 GESTIÓN DE BLOQUEOS**: Block/unblock con ambos identificadores
+
 ### 📤 **MessageController** - IMPLEMENTADO ✅
   - Endpoint POST `/messages/text` - Enviar mensajes de texto
   - Endpoint POST `/messages/image` - Enviar imágenes con caption
