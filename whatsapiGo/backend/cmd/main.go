@@ -39,9 +39,10 @@ func main() {
     // Crear controladores
     instanceController := controllers.NewInstanceController(container, waLogger)
     messageController := controllers.NewMessageController(instanceController, waLogger)
+    contactController := controllers.NewContactController(instanceController, waLogger)
 
     // Configurar rutas
-    router := routes.SetupRoutes(instanceController, messageController)
+    router := routes.SetupRoutes(instanceController, messageController, contactController)
 
     // Obtener puerto del environment o usar 8080 por defecto
     port := os.Getenv("PORT")
@@ -51,14 +52,9 @@ func main() {
 
     // Iniciar servidor
     logger.Sugar().Infof("🚀 WhatsApp API Server iniciado en puerto %s", port)
-    logger.Sugar().Infof("📱 Endpoints disponibles:")
-    logger.Sugar().Infof("   POST /api/v1/messages/text - Enviar texto")
-    logger.Sugar().Infof("   POST /api/v1/messages/image - Enviar imagen")
-    logger.Sugar().Infof("   POST /api/v1/messages/video - Enviar video")
-    logger.Sugar().Infof("   POST /api/v1/messages/audio - Enviar audio")
-    logger.Sugar().Infof("   POST /api/v1/messages/document - Enviar documento")
-    logger.Sugar().Infof("   POST /api/v1/messages/location - Enviar ubicación")
-    logger.Sugar().Infof("   POST /api/v1/messages/contact - Enviar contacto")
+    logger.Sugar().Infof("📱 Endpoints de mensajes disponibles")
+    logger.Sugar().Infof("👥 Endpoints de contactos con soporte LID disponibles")
+    logger.Sugar().Infof("🔄 Conversión JID ↔ LID habilitada")
     
     log.Fatal(router.Run(":" + port))
 }
