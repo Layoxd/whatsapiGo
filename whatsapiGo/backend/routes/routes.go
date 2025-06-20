@@ -10,6 +10,7 @@ func SetupRoutes(
     instanceController *controllers.InstanceController,
     messageController *controllers.MessageController,
     contactController *controllers.ContactController,
+    groupController *controllers.GroupController,
 ) *gin.Engine {
     router := gin.Default()
     
@@ -66,10 +67,33 @@ func SetupRoutes(
             contacts.POST("/:instanceId/check", contactController.CheckContacts)
             contacts.POST("/:instanceId/block", contactController.BlockContact)
             contacts.POST("/:instanceId/unblock", contactController.UnblockContact)
-            
-            // Rutas para conversión LID ↔ JID
             contacts.GET("/:instanceId/lid/get", contactController.GetLIDFromJID)
             contacts.GET("/:instanceId/lid/from-lid", contactController.GetJIDFromLID)
+        }
+
+        // Rutas de grupos
+        groups := v1.Group("/groups")
+        {
+            groups.POST("/:instanceId/create", groupController.CreateGroup)
+            groups.DELETE("/:instanceId/:groupId", groupController.DeleteGroup)
+            groups.GET("/:instanceId", groupController.GetGroups)
+            groups.GET("/:instanceId/:groupId/info", groupController.GetGroupInfo)
+            groups.PUT("/:instanceId/:groupId/update", groupController.UpdateGroup)
+            
+            // Gestión de participantes
+            groups.POST("/:instanceId/:groupId/participants/add", groupController.AddParticipants)
+            groups.POST("/:instanceId/:groupId/participants/remove", groupController.RemoveParticipants)
+            
+            // Gestión de administradores
+            groups.POST("/:instanceId/:groupId/admins/add", groupController.PromoteToAdmin)
+            groups.POST("/:instanceId/:groupId/admins/remove", groupController.DemoteFromAdmin)
+            
+            // Enlaces de invitación
+            groups.GET("/:instanceId/:groupId/invite-link", groupController.GetInviteLink)
+            groups.POST("/:instanceId/:groupId/invite-link/reset", groupController.ResetInviteLink)
+            
+            // Acciones del grupo
+            groups.POST("/:instanceId/:groupId/leave", groupController.LeaveGroup)
         }
     }
 
