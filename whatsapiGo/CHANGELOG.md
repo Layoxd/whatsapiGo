@@ -14,6 +14,24 @@
 * Primer mensaje para (mock) establecido
 * Confirmación de Stack Tecnológico: WhatsMeow + Gin + PostgreSQL + Redis + Vue3
 
+### 📢 **StatusController** - IMPLEMENTADO ✅
+  - Endpoint POST `/status/{instanceId}/publish` - Publicar estado/story multimedia
+  - Endpoint GET `/status/{instanceId}` - Listar estados propios
+  - Endpoint GET `/status/{instanceId}/contacts` - Ver estados de contactos
+  - Endpoint GET `/status/{instanceId}/contact/{jid}` - Estados de contacto específico
+  - Endpoint DELETE `/status/{instanceId}/{statusId}` - Eliminar estado propio
+  - Endpoint GET `/status/{instanceId}/{statusId}/viewers` - Ver quién vio el estado
+  - Endpoint POST `/status/{instanceId}/privacy` - Configurar privacidad de estados
+  - Endpoint GET `/status/{instanceId}/privacy` - Obtener configuración de privacidad
+  - **📱 MULTIMEDIA COMPLETO**: Texto, imagen, video, audio en estados
+  - **🎯 AUDIENCIA PERSONALIZADA**: Control fino de quién puede ver
+  - **📊 ESTADÍSTICAS AVANZADAS**: Visualizaciones, interacciones, alcance
+  - **🔒 PRIVACIDAD GRANULAR**: Configuraciones por contacto y grupo
+  - **⏰ GESTIÓN TEMPORAL**: Estados con duración automática de 24h
+  - **👀 VISUALIZACIÓN INTELIGENTE**: Tracking de quién vio cada estado
+  - **🎨 FORMATOS RICOS**: Soporte para stickers, GIFs, ubicaciones
+  - **📈 ANALYTICS**: Métricas de engagement y alcance
+
 ### 👥 **GroupController** - IMPLEMENTADO ✅
   - Endpoint POST `/groups/{instanceId}/create` - Crear nuevo grupo
   - Endpoint DELETE `/groups/{instanceId}/{groupId}` - Eliminar grupo (solo admin)
