@@ -1,1 +1,0 @@
-// Archivo base: vite.config.js
